@@ -25,7 +25,7 @@ def make_soup(url_, issue_, level_,):
     """
     local_filename, headers = urllib.request.urlretrieve(url_, issue_ + level_)
     page_ = open(local_filename)
-    soup_ = BeautifulSoup(page_,'html.parser')
+    soup_ = BeautifulSoup(page_, 'html.parser')
     page_.close()
     return soup_
 
@@ -53,13 +53,13 @@ def cleanfolder(filepath):
         # print(filename)
 
 base = 'https://www.atomicempire.com'
-starter= '/Comic/TitleList?txt='
+starter = '/Comic/TitleList?txt='
 #issue = 'The Flash 761'
 issue = 'Nightwing 76'
 lz = 'processing\\'
 
 
-fissue= issue.replace(' ', '_')
+fissue = issue.replace(' ', '_')
 qissue = quote(issue)
 
 address = base + starter + qissue
@@ -98,7 +98,8 @@ grab_image(soup, lz + fissue)
 
 #store the information somewhere
 
-# Clean out the processing folder if no abends. if the error did occur you want to see where it failed and the extracts it was working with.
+# Clean out the processing folder if no abends.
+# if the error did occur you want to see where it failed and the extracts it was working with.
 cleanfolder(lz)
 print('done')
 
@@ -108,9 +109,8 @@ print('done')
 # + can i do a title search and loop through downloading the information?
 # + able to take a list of issues
 # + able to rest between requests
-# + look at what is in the headers of the make soup function
 # + error planning
 # + store the sting information
 # + move or store pic somehwere
 # + review nameing convention of pic based on how storage is done.
-# + further refacotring and class creation
+# + further refacotring
