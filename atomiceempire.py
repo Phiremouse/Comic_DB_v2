@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 # + since the object is initliaized i dont need the saving of the txt file. if it errors out then yeah totes need it.
 # + is there a way to write doc strings for attributes (Properties)
 # + error control
+# creating new branch to remove the text files for everypull
 
 
 class AtomicEmpire:
