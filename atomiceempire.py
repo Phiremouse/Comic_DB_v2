@@ -5,6 +5,11 @@ from urllib.parse import quote
 import requests
 from PIL import Image
 from bs4 import BeautifulSoup
+# todo:
+# + since the object is initliaized i dont need the saving of the txt file. if it errors out then yeah totes need it.
+# + is there a way to write doc strings for attributes (Properties)
+# + error control
+
 
 class AtomicEmpire:
     def __init__(self):
