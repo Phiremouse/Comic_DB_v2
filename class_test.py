@@ -1,7 +1,11 @@
 import datetime
-from atomiceempire import AtomicEmpire
+from atomicempire import AtomicEmpire
 
 print('Start: ' + str(datetime.datetime.now()))
+
 ae = AtomicEmpire()
-ae.get_issue_info('Nightwing 76')
+ae.get_issue_info('The Flash Annual 1')
+print(ae.creators)
+print(ae.issue_description)
+ae.show_image()
 print('End: ' + str(datetime.datetime.now()))

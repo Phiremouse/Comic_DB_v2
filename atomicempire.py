@@ -6,10 +6,9 @@ import requests
 from PIL import Image
 from bs4 import BeautifulSoup
 # todo:
-# + since the object is initliaized i dont need the saving of the txt file. if it errors out then yeah totes need it.
 # + is there a way to write doc strings for attributes (Properties)
 # + error control
-# creating new branch to remove the text files for everypull
+
 
 
 class AtomicEmpire:
@@ -26,26 +25,54 @@ class AtomicEmpire:
         self.__search_site()
         self.__search_title()
         self.__search_issue()
+        self.__create_creator_list()
+        self.__create_issue_description()
+        self.__create_image()
 
     def __search_site(self):
         self.address = self.base + self.url_issue_query + self.qissue
-        #search results assuming it matches to only one
-        self.soup_site = self.__make_soup(self.address, self.dest_folder + self.fissue, '_search.txt')
+        #search results assuming it matches to only one.it usually defaults to the newest one.
+        #Batman: Black and White 2013 vs 2020
+
+        # self.soup_site = self.__make_soup(self.address)
+        self.soup_site = self.__make_soup(self.address, self.dest_folder, self.fissue, '_search.html')
         self.line_site = self.soup_site.find(class_='row-title', href=True).get('href')
 
     def __search_title(self):
-        self.soup_title = self.__make_soup(self.base + self.line_site, self.dest_folder + self.fissue, '_titles.txt')
-        self.line_title = self.soup_title.find(class_='col item-content pl-0').find('a', href=True).get('href')
+        # self.soup_title = self.__make_soup(self.base + self.line_site)
+        self.soup_title = self.__make_soup(self.base + self.line_site, self.dest_folder, self.fissue, '_titles.html')
+
+        # self.line_title = self.soup_title.find(class_='col item-content pl-0').find('a', href=True).get('href')
+        self.line_slice = self.soup_title.find_all('div', class_='row item-row py-1')
+
+        title = []
+        for line_item in self.line_slice:
+            t_soup = BeautifulSoup(str(line_item), 'html.parser')
+            t_soup2 = t_soup.find_all('a', href=True)
+            for line_item2 in t_soup2:
+                # anchors with no text
+                if line_item2.text != '\n\n':
+                    # does both the issue have or not have these special issues
+                    # need a function just to do this alone. there will be other types that will need to be added.
+                    if (self.issue.find('Annual') == -1 and line_item2.text.find('Annual') == -1) or (self.issue.find('Annual') > -1 and line_item2.text.find('Annual') > -1):
+                        if (self.issue.find('2nd Printing') == -1 and line_item2.text.find('2nd Printing') > -1) or (self.issue.find('2nd Printing') == -1 and line_item2.text.find('2nd Printing') > -1) :
+                            title.append(line_item2)
+
+        t_soup3 = BeautifulSoup(str(title[0]), 'html.parser')
+
+        # todo: make it were it can get all the appropriate comics variations.
+        self.line_title = t_soup3.find('a')['href']
 
     def __search_issue(self):
-        self.soup_issue = self.__make_soup(self.base + self.line_title, self.dest_folder + self.fissue, '_issue.txt')
+        # self.soup_issue = self.__make_soup(self.base + self.line_title)
+        self.soup_issue = self.__make_soup(self.base + self.line_title, self.dest_folder, self.fissue, '_issue.html')
         self.issue_card = self.soup_issue.find(class_='issue-description')
         self.roles = self.issue_card.find_all(class_='creator-role')
 
-    def create_image(self):
+    def __create_image(self):
         self.__grab_image(self.soup_issue, self.dest_folder + self.fissue)
 
-    def create_creator_list(self):
+    def __create_creator_list(self):
         # finding the roles and names for the comic
         self.creators = {}
 
@@ -55,7 +82,7 @@ class AtomicEmpire:
             self.creators[c_role.text] = c_name.text
             print(c_role.text + '' + c_name.text)
 
-    def create_issue_description(self):
+    def __create_issue_description(self):
         #find the description
         self.issue_card_copy = copy.copy(self.issue_card)
         for child in self.issue_card_copy.find_all('div'):
@@ -65,12 +92,13 @@ class AtomicEmpire:
         self.issue_description = " ".join(pdescr)
         # print(fdescr)
 
-    def __make_soup(self, url_, issue_, level_,):
+    def __make_soup(self, url_, *Downloand_Info):
         """
             Copying network object denoted by the url_ to a local file.
             The file is then parsed by beautifulsoup (BS).
             The BS object object is reutrned.
         Args:
+            all part of *Download_Info
             url_ (string): The url that will be retrieving the information from
             issue_ (string): The formatted issue name that will be apart of the file name
             level_ (string): The ending of the file name the function is saving to.
@@ -78,11 +106,20 @@ class AtomicEmpire:
         Returns:
             beautifulsoup: soup object ready to be filtered.
         """
-        local_filename, headers = urllib.request.urlretrieve(url_, issue_ + level_)
-        page_ = open(local_filename)
-        soup_ = BeautifulSoup(page_, 'html.parser')
-        page_.close()
-        return soup_
+        if bool(Downloand_Info):
+            file_location = ''
+            for value in Downloand_Info:
+                file_location += value
+
+            local_filename, headers = urllib.request.urlretrieve(url_, file_location)
+            page = open(local_filename)
+            soup = BeautifulSoup(page, 'html.parser')
+            page.close()
+        else:
+            response = requests.get(url_)
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+        return soup
 
     def __grab_image(self, soup_, img_name):
         """
@@ -95,7 +132,8 @@ class AtomicEmpire:
         img_add = soup_.find(class_='itemimage')
         image_url = img_add['src']
         img = Image.open(requests.get(image_url, stream=True).raw)
-        img.save(img_name + '.jpg')
+        self.Issue_Thumbnail = img_name + '.jpg'
+        img.save(self.Issue_Thumbnail)
 
     def __cleanfolder(self, filepath):
         """
@@ -106,3 +144,7 @@ class AtomicEmpire:
         for filename in os.listdir(filepath):
             os.unlink(filepath + filename)
             # print(filename)
+
+    def show_image(self):
+        img = Image.open(self.Issue_Thumbnail)
+        img.show()
