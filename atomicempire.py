@@ -12,6 +12,8 @@ from bs4 import BeautifulSoup
 
 
 class AtomicEmpire:
+    """[summary]
+    """
     def __init__(self):
         self.base = 'https://www.atomicempire.com'
         self.url_issue_query = '/Comic/TitleList?txt='
@@ -21,6 +23,7 @@ class AtomicEmpire:
         self.issue = issue_
         self.fissue = self.issue.replace(' ', '_')
         self.qissue = quote(self.issue)
+        self.test_output = False
 
         self.__search_site()
         self.__search_title()
@@ -34,13 +37,20 @@ class AtomicEmpire:
         #search results assuming it matches to only one.it usually defaults to the newest one.
         #Batman: Black and White 2013 vs 2020
 
-        # self.soup_site = self.__make_soup(self.address)
-        self.soup_site = self.__make_soup(self.address, self.dest_folder, self.fissue, '_search.html')
+        if self.test_output:
+            self.soup_site = self.__make_soup(self.address, self.dest_folder, self.fissue, '_search.html')
+        else:
+            self.soup_site = self.__make_soup(self.address)
+
         self.line_site = self.soup_site.find(class_='row-title', href=True).get('href')
 
     def __search_title(self):
-        # self.soup_title = self.__make_soup(self.base + self.line_site)
-        self.soup_title = self.__make_soup(self.base + self.line_site, self.dest_folder, self.fissue, '_titles.html')
+        # make this a conditional statment using a class attribute called self.test_output
+        if self.test_output:
+            self.soup_title = self.__make_soup(self.base + self.line_site, self.dest_folder, self.fissue, '_titles.html')
+        else:
+            self.soup_title = self.__make_soup(self.base + self.line_site)
+
 
         # self.line_title = self.soup_title.find(class_='col item-content pl-0').find('a', href=True).get('href')
         self.line_slice = self.soup_title.find_all('div', class_='row item-row py-1')
@@ -55,7 +65,7 @@ class AtomicEmpire:
                     # does both the issue have or not have these special issues
                     # need a function just to do this alone. there will be other types that will need to be added.
                     if (self.issue.find('Annual') == -1 and line_item2.text.find('Annual') == -1) or (self.issue.find('Annual') > -1 and line_item2.text.find('Annual') > -1):
-                        if (self.issue.find('2nd Printing') == -1 and line_item2.text.find('2nd Printing') > -1) or (self.issue.find('2nd Printing') == -1 and line_item2.text.find('2nd Printing') > -1) :
+                        if (self.issue.find('2nd Printing') == -1 and line_item2.text.find('2nd Printing') == -1) or (self.issue.find('2nd Printing') > -1 and line_item2.text.find('2nd Printing') > -1) :
                             title.append(line_item2)
 
         t_soup3 = BeautifulSoup(str(title[0]), 'html.parser')
@@ -64,8 +74,11 @@ class AtomicEmpire:
         self.line_title = t_soup3.find('a')['href']
 
     def __search_issue(self):
-        # self.soup_issue = self.__make_soup(self.base + self.line_title)
-        self.soup_issue = self.__make_soup(self.base + self.line_title, self.dest_folder, self.fissue, '_issue.html')
+        if self.test_output:
+            self.soup_issue = self.__make_soup(self.base + self.line_title, self.dest_folder, self.fissue, '_issue.html')
+        else:
+            self.soup_issue = self.__make_soup(self.base + self.line_title)
+
         self.issue_card = self.soup_issue.find(class_='issue-description')
         self.roles = self.issue_card.find_all(class_='creator-role')
 
@@ -80,7 +93,7 @@ class AtomicEmpire:
             c_role = role.find('span')
             c_name = role.find(class_='creator')
             self.creators[c_role.text] = c_name.text
-            print(c_role.text + '' + c_name.text)
+            # print(c_role.text + '' + c_name.text)
 
     def __create_issue_description(self):
         #find the description
@@ -112,7 +125,7 @@ class AtomicEmpire:
                 file_location += value
 
             local_filename, headers = urllib.request.urlretrieve(url_, file_location)
-            page = open(local_filename)
+            page = open(local_filename, encoding='utf8')
             soup = BeautifulSoup(page, 'html.parser')
             page.close()
         else:

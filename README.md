@@ -4,4 +4,4 @@ Atomice Empire notes:
 + if there are lower numbers annauals come into play
 + error handling needs to be done
 + can i check status and store request?
-+ make a process to confirm or reject the request.
++ make a process to confirm or reject the request information returned.
