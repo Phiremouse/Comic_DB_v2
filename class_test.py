@@ -4,6 +4,7 @@ from atomicempire import AtomicEmpire
 print('Start: ' + str(datetime.datetime.now()))
 
 ae = AtomicEmpire()
+ae.test_output = True
 ae.get_issue_info('The Flash 1')
 print(ae.creators)
 print(ae.issue_description)
