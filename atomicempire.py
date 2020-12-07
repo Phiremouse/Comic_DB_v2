@@ -18,12 +18,13 @@ class AtomicEmpire:
         self.base = 'https://www.atomicempire.com'
         self.url_issue_query = '/Comic/TitleList?txt='
         self.dest_folder = 'processing\\'
+        self.test_output = False
+        self.keywords = ['Annual', '2nd Printing']
 
     def get_issue_info(self, issue_):
         self.issue = issue_
         self.fissue = self.issue.replace(' ', '_')
         self.qissue = quote(self.issue)
-        self.test_output = False
 
         self.__search_site()
         self.__search_title()
@@ -32,27 +33,23 @@ class AtomicEmpire:
         self.__create_issue_description()
         self.__create_image()
 
+    def __soup_bowl(self, url_, *Download_Info):
+        if self.test_output:
+            temp_soup = self.__make_soup(url_, *Download_Info)
+        else:
+            temp_soup = self.__make_soup(self.address)
+        return temp_soup
+
     def __search_site(self):
         self.address = self.base + self.url_issue_query + self.qissue
         #search results assuming it matches to only one.it usually defaults to the newest one.
         #Batman: Black and White 2013 vs 2020
-
-        if self.test_output:
-            self.soup_site = self.__make_soup(self.address, self.dest_folder, self.fissue, '_search.html')
-        else:
-            self.soup_site = self.__make_soup(self.address)
-
+        self.soup_site = self.__soup_bowl(self.address, self.dest_folder, self.fissue, '_search.html')
         self.line_site = self.soup_site.find(class_='row-title', href=True).get('href')
 
     def __search_title(self):
         # make this a conditional statment using a class attribute called self.test_output
-        if self.test_output:
-            self.soup_title = self.__make_soup(self.base + self.line_site, self.dest_folder, self.fissue, '_titles.html')
-        else:
-            self.soup_title = self.__make_soup(self.base + self.line_site)
-
-
-        # self.line_title = self.soup_title.find(class_='col item-content pl-0').find('a', href=True).get('href')
+        self.soup_title = self.__soup_bowl(self.base + self.line_site, self.dest_folder, self.fissue, '_titles.html')
         self.line_slice = self.soup_title.find_all('div', class_='row item-row py-1')
 
         title = []
@@ -73,12 +70,9 @@ class AtomicEmpire:
         # todo: make it were it can get all the appropriate comics variations.
         self.line_title = t_soup3.find('a')['href']
 
-    def __search_issue(self):
-        if self.test_output:
-            self.soup_issue = self.__make_soup(self.base + self.line_title, self.dest_folder, self.fissue, '_issue.html')
-        else:
-            self.soup_issue = self.__make_soup(self.base + self.line_title)
 
+    def __search_issue(self):
+        self.soup_issue = self.__soup_bowl(self.base + self.line_title, self.dest_folder, self.fissue, '_issue.html')
         self.issue_card = self.soup_issue.find(class_='issue-description')
         self.roles = self.issue_card.find_all(class_='creator-role')
 
